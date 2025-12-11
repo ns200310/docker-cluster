@@ -39,7 +39,8 @@ services:
       - ./config:/opt/hadoop/etc/hadoop
       - ./config/log4j.properties:/opt/hadoop/etc/hadoop/log4j.properties
       - ./config/krb5.conf:/etc/krb5.conf
-      - ./secrets:/etc/security/keytabs
+      - ./secrets/dn1.keytab:/etc/security/keytabs/dn.keytab
+      - ./secrets/nn.keytab:/etc/security/keytabs/nn.keytab
       - ./config/container-executor.cfg:/opt/hadoop/etc/hadoop/container-executor.cfg
     depends_on:
       - namenode
@@ -62,7 +63,8 @@ services:
       - ./config:/opt/hadoop/etc/hadoop
       - ./config/log4j.properties:/opt/hadoop/etc/hadoop/log4j.properties
       - ./config/krb5.conf:/etc/krb5.conf
-      - ./secrets:/etc/security/keytabs
+      - ./secrets/dn2.keytab:/etc/security/keytabs/dn.keytab
+      - ./secrets/nn.keytab:/etc/security/keytabs/nn.keytab
       - ./config/container-executor.cfg:/opt/hadoop/etc/hadoop/container-executor.cfg
     depends_on:
       - namenode

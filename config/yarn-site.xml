@@ -33,7 +33,7 @@
   </property>
   <property>
         <name>yarn.resourcemanager.principal</name>
-        <value>nn/_HOST@EXAMPLE.COM</value>
+        <value>nn/namenode@EXAMPLE.COM</value>
     </property>
     <property>
         <name>yarn.resourcemanager.keytab</name>

@@ -33,8 +33,13 @@
         <name>dfs.datanode.keytab.file</name>
         <value>/etc/security/keytabs/dn.keytab</value> </property>
     <property>
-        <name>dfs.datanode.kerberos.principal</name>
-        <value>dn/_HOST@EXAMPLE.COM</value>
+        <name>dfs.namenode.kerberos.principal</name>
+        <value>nn/namenode@EXAMPLE.COM</value>
+    </property>
+    
+    <property>
+        <name>dfs.namenode.kerberos.internal.spnego.principal</name>
+        <value>HTTP/namenode@EXAMPLE.COM</value>
     </property>
     <property>
         <name>dfs.datanode.address</name>
