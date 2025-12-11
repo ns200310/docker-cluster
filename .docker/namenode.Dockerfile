@@ -13,6 +13,12 @@ RUN rm -rf /opt/hadoop/share/doc
 RUN curl ${SPARK_URL} -o ${SPARK_ZIP}
 RUN tar zxf ${SPARK_ZIP}
 RUN rm -rf ${SPARK_ZIP}
+# 1. Fix CentOS 7 EOL repositories (Point to vault)
+RUN sudo sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-* && \
+    sudo sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+
+# 2. Install the correct Kerberos package for CentOS
+RUN sudo yum install -y krb5-workstation openssl11-libs
 WORKDIR /opt/hadoop
 ADD config/log4j.properties /opt/hadoop/etc/hadoop/log4j.properties
 RUN sudo chown -R hadoop:users /opt/hadoop/etc/hadoop/*

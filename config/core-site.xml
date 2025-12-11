@@ -3,4 +3,20 @@
     <name>fs.defaultFS</name>
     <value>hdfs://namenode:9000</value>
   </property>
+   <property>
+        <name>hadoop.security.authentication</name>
+        <value>kerberos</value>
+    </property>
+    <property>
+        <name>hadoop.security.authorization</name>
+        <value>true</value>
+    </property>
+   <property>
+    <name>hadoop.security.auth_to_local</name>
+    <value>
+        RULE:[2:$1@$0](nn@EXAMPLE.COM)s/.*/root/
+        RULE:[2:$1@$0](dn@EXAMPLE.COM)s/.*/root/
+        DEFAULT
+    </value>
+</property>
 </configuration>

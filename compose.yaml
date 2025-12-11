@@ -14,6 +14,8 @@ services:
       - ./config:/opt/hadoop/etc/hadoop
       - ./start-hdfs.sh:/start-hdfs.sh
       - ./config/log4j.properties:/opt/hadoop/etc/hadoop/log4j.properties
+      - ./config/krb5.conf:/etc/krb5.conf
+      - ./secrets:/etc/security/keytabs
     ports:
       - "9870:9870"
       - "8088:8088"
@@ -36,6 +38,9 @@ services:
       - ./datanode1:/opt/hadoop/data/dataNode
       - ./config:/opt/hadoop/etc/hadoop
       - ./config/log4j.properties:/opt/hadoop/etc/hadoop/log4j.properties
+      - ./config/krb5.conf:/etc/krb5.conf
+      - ./secrets:/etc/security/keytabs
+      - ./config/container-executor.cfg:/opt/hadoop/etc/hadoop/container-executor.cfg
     depends_on:
       - namenode
     networks:
@@ -56,11 +61,32 @@ services:
       - ./datanode2:/opt/hadoop/data/dataNode
       - ./config:/opt/hadoop/etc/hadoop
       - ./config/log4j.properties:/opt/hadoop/etc/hadoop/log4j.properties
+      - ./config/krb5.conf:/etc/krb5.conf
+      - ./secrets:/etc/security/keytabs
+      - ./config/container-executor.cfg:/opt/hadoop/etc/hadoop/container-executor.cfg
     depends_on:
       - namenode
     networks:
       hdfs_network:
         ipv4_address: 172.30.0.4
+  kdc:
+    build: 
+      context: .
+      dockerfile: .docker/kdc.Dockerfile
+    container_name: kdc
+    hostname: kdc
+    command: [ "/bin/bash", "/init-kdc.sh" ]
+    user: root
+    ports:
+      - "88:88"
+      - "749:749"
+    volumes:
+      - ./config/krb5.conf:/etc/krb5.conf
+      - ./secrets:/var/kerberos/krb5kdc/secrets
+      - ./init-kdc.sh:/init-kdc.sh
+    networks:
+      hdfs_network:
+        ipv4_address: 172.30.0.5
 
 networks:
   hdfs_network:

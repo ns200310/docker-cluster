@@ -31,4 +31,35 @@
     <name>yarn.scheduler.capacity.root.default.capacity</name>
     <value>100</value>
   </property>
+  <property>
+        <name>yarn.resourcemanager.principal</name>
+        <value>nn/_HOST@EXAMPLE.COM</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.keytab</name>
+        <value>/etc/security/keytabs/nn.keytab</value>
+    </property>
+
+    <property>
+        <name>yarn.nodemanager.principal</name>
+        <value>dn/_HOST@EXAMPLE.COM</value>
+    </property>
+    <property>
+        <name>yarn.nodemanager.keytab</name>
+        <value>/etc/security/keytabs/dn.keytab</value>
+    </property>
+    
+    <property>
+        <name>yarn.nodemanager.container-executor.class</name>
+        <value>org.apache.hadoop.yarn.server.nodemanager.DefaultContainerExecutor</value>
+    </property>
+    <property>
+        <name>yarn.nodemanager.linux-container-executor.group</name>
+        <value>hadoop</value>
+    </property>
+    
+    <property>
+        <name>yarn.resourcemanager.hostname</name>
+        <value>namenode</value>
+    </property>
 </configuration>
