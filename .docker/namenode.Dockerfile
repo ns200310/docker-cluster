@@ -1,10 +1,15 @@
 FROM apache/hadoop-runner
 ARG HADOOP_URL=https://dlcdn.apache.org/hadoop/common/hadoop-3.3.6/hadoop-3.3.6.tar.gz
 ARG SPARK_URL=https://archive.apache.org/dist/spark/spark-3.3.1/spark-3.3.1-bin-hadoop3.tgz
-ARG SBT_URL= https://www.scala-sbt.org/sbt-rpm.repo
+ARG SBT_URL=https://www.scala-sbt.org/sbt-rpm.repo
 ARG HADOOP_ZIP=hadoop.tar.gz
 ARG SPARK_ZIP=spark-3.3.1-bin-hadoop3.tgz
 ENV HADOOP_HOME /opt/hadoop
+ENV HADOOP_CONF_DIR $HADOOP_HOME/etc/hadoop
+ENV DATANODE_DIR=$HADOOP_HOME/data/dataNode
+ENV NAMENODE_DIR=$HADOOP_HOME/data/nameNode
+ENV SPARK_HOME /opt/spark-3.3.1-bin-hadoop3/
+
 WORKDIR /opt
 RUN sudo rm -rf ${HADOOP_HOME}
 RUN curl -LSs -o ${HADOOP_ZIP} $HADOOP_URL
@@ -18,13 +23,7 @@ RUN rm -rf ${SPARK_ZIP}
 WORKDIR $HADOOP_HOME
 ADD config/log4j.properties $HADOOP_HOME/etc/hadoop/log4j.properties
 RUN sudo chown -R hadoop:users $HADOOP_HOME/etc/hadoop/*
-ENV HADOOP_CONF_DIR $HADOOP_HOME/etc/hadoop
-ENV DATANODE_DIR=$HADOOP_HOME/data/dataNode
-
-ENV NAMENODE_DIR=$HADOOP_HOME/data/nameNode
-
 RUN mkdir -p ${NAMENODE_DIR}
-ENV SPARK_HOME /opt/spark-3.3.1-bin-hadoop3/bin
 COPY start-hdfs.sh /usr/local/bin/start-hdfs.sh
 
 # Make the script executable
