@@ -1,0 +1,1 @@
+rm -rf datanode1 datanode2 namenode secrets
