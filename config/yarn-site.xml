@@ -15,6 +15,14 @@
     <name>yarn.resourcemanager.webapp.address</name>
     <value>namenode:8088</value>
   </property>
+   <property>
+    <name>yarn.scheduler.capacity.root.queues</name>
+    <value>default</value>
+  </property>
+  <property>
+    <name>yarn.scheduler.capacity.root.default.capacity</name>
+    <value>100</value>
+  </property>
   <property>
     <name>yarn.nodemanager.resource.memory-mb</name>
     <value>2048</value>
@@ -22,13 +30,5 @@
   <property>
     <name>yarn.nodemanager.resource.cpu-vcores</name>
     <value>2</value>
-  </property>
-  <property>
-    <name>yarn.scheduler.capacity.root.queues</name>
-    <value>default</value>
-  </property>
-  <property>
-    <name>yarn.scheduler.capacity.root.default.capacity</name>
-    <value>100</value>
   </property>
 </configuration>
