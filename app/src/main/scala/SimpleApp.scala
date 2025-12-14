@@ -1,56 +1,88 @@
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.rdd.RDD
 
-object HdfsWordCount {
+object LanguageIdentifier {
+
+  val englishWords = Set("the", "a", "and", "of", "to", "in", "is", "it", "that", "was")
+  val frenchWords  = Set("le", "la", "les", "de", "des", "un", "une", "est", "et", "il")
+  val germanWords  = Set("der", "die", "das", "und", "ein", "eine", "ist", "in", "von", "zu")
+
   def main(args: Array[String]): Unit = {
-    // 1. Initialize SparkSession
-    // This is the entry point for all functionality in Spark
     val spark = SparkSession
       .builder()
-      .appName("HdfsMostUsedWord")
+      .appName("HdfsLanguageIdentifier")
       .getOrCreate()
 
-    // Import the Spark context (sc) from the SparkSession
-    val sc = spark.sparkContext
-    
-    // Define the HDFS path pattern for your files (1, 2, 3)
-    // **IMPORTANT: Adjust this path to your actual HDFS directory.**
-    val hdfsPath = "hdfs://namenode:9000/*.txt"
+    val sparkContext = spark.sparkContext
 
-    // 2. Read the text files from HDFS into an RDD
-    // textFile automatically handles glob patterns like *
-    val lines = sc.textFile(hdfsPath)
+    val hadoopPath = "hdfs://namenode:9000/*.txt"
 
-    // 3. Perform the Word Count logic
-    val wordCounts = lines
-      // Split each line into words using a regular expression for non-word characters
-      // flatMap flattens the resulting array of words into a single RDD of words
-      .flatMap(line => line.split("\\W+")) 
-      // Convert all words to lowercase for accurate counting
-      .map(_.toLowerCase)
-      // Filter out any empty strings that may result from splitting/cleaning
-      .filter(_.nonEmpty)
-      // Map each word to a (word, 1) tuple
-      .map(word => (word, 1))
-      // Reduce by key: sum the counts for each word
-      .reduceByKey(_ + _)
+    println(s"Processing files from: $hadoopPath")
 
-    // 4. Find the most used word
-    // Swap (word, count) to (count, word)
-    val sortedWordCounts = wordCounts.map(_.swap)
-      // Sort in descending order by the count (key)
-      .sortByKey(ascending = false)
+    try {
+      val textFileLines = sparkContext.textFile(hadoopPath)
 
-    // 5. Get the top result (the most frequent word and its count)
-    // collect() is used to bring the result back to the driver, only use on small results!
-    val mostUsedWord = sortedWordCounts.first()
+      val wordCount: RDD[(String, Int)] = textFileLines
+        .flatMap(sentence => sentence.split("\\W+")) 
+        .map(processedWord => processedWord.toLowerCase)
+        .filter(processedWord => processedWord.nonEmpty && processedWord.length > 1)
+        .map(processedWord => (processedWord, 1))
+        .reduceByKey(_ + _)
+        .cache()
 
-    // 6. Print the result
-    println("------------------------------------------")
-    println(s"File Path Processed: $hdfsPath")
-    println(s"The most used word is: '${mostUsedWord._2}' with ${mostUsedWord._1} occurrences.")
-    println("------------------------------------------")
+      val wordPredictionArray = wordCount.map(_.swap).sortByKey(ascending = false).first()
+      val wordPrediction: String = wordPredictionArray._2
+      val wordPredictionCount: Int = wordPredictionArray._1
 
-    // 7. Stop the SparkSession
-    spark.stop()
+
+      var res: String = "Could not determine (Word not in primary word)"
+      
+      if (englishWords.contains(wordPrediction)) {
+        res = "English"
+      } else if (germanWords.contains(wordPrediction)) {
+        res = "German"
+      } else if (frenchWords.contains(wordPrediction)) {
+        res = "French"
+      } 
+      
+      if (res.contains("Could not determine")) {
+          
+          println(s"'$wordPrediction' is not a primary word. Checking aggregate counts...")
+
+          val indicatorCounts = wordCount.filter { case (word, count) => 
+            englishWords.contains(word) || frenchWords.contains(word) || germanWords.contains(word)
+          }.collectAsMap()
+          
+          val totalEnglishWordCount = englishWords.map(indicatorCounts.getOrElse(_, 0)).sum
+          val totalFrenchCount  = frenchWords.map(indicatorCounts.getOrElse(_, 0)).sum
+          val totalGermanCount  = germanWords.map(indicatorCounts.getOrElse(_, 0)).sum
+
+          val totalCounts = Map(
+              "English" -> totalEnglishWordCount, 
+              "French"  -> totalFrenchCount, 
+              "German"  -> totalGermanCount
+          )
+          
+          val (bestMatchLanguage, bestMatchCount) = totalCounts.maxBy(_._2)
+          
+          if (bestMatchCount > 0) {
+              res = s"$bestMatchLanguage (by aggregate indicator count: $bestMatchCount)"
+          } else {
+              res = "Could not determine (No indicator words found)"
+          }
+           
+          println(s"English: $totalEnglishWordCount, French: $totalFrenchCount, German: $totalGermanCount")
+      }
+
+
+      println(s"The overall most used word is: '${wordPrediction}' with $wordPredictionCount occurrences.")
+      println(s"The most common language in the directory is pred to be: $res")
+
+    } catch {
+      case e: Exception =>
+        println(s"Error: ${e.getMessage}")
+    } finally {
+      spark.stop()
+    }
   }
 }
